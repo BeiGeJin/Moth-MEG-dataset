@@ -1,4 +1,4 @@
-This is a repository the Moth MEG data. Maintained by Jerry Jin.
+This is a repository for the Moth MEG data. Maintained by Jerry Jin.
 
 The preprocessed data is located on the cortex cluster: `/project_data/volume0/jerryjin/moth_meg/`. Now includes subject A and C. `load_data.ipynb` provides an example of loading the preprocessed data.
 
