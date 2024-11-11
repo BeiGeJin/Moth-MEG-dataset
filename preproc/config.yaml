@@ -1,0 +1,29 @@
+SUBJECT: "C"
+SESSIONS: ["Moth1", "Moth2", "Moth3", "Moth4", "Moth5"]
+Moth1:
+  BLOCKS: ["01", "02", "03", "04", "05", "06", "07", "08"]
+Moth2:
+  BLOCKS: ["01", "02", "03", "04", "05", "06", "07"]
+Moth3:
+  BLOCKS: ["01", "02", "03", "04", "05", "06", "07"]
+Moth4:
+  BLOCKS: ["01", "02", "03", "04", "05", "06", "07", "08"]
+Moth5:
+  BLOCKS: ["01", "02", "03", "04", "05", "06", "07"]
+
+sss:
+  BADS_MANUAL: ["MEG1212"]  # for subject A and C
+
+after_sss:
+  ER_NWINS: 4
+  ER_WINLEN: 10
+  ER_NGRAD: 2
+  ER_NMAG: 2
+  FILT_LFREQ: "None"
+  FILT_HFREQ: 150
+  NOTCH_FREQS: [60, 120]
+  ECG_METHOD: "ica"  # "self" or "first" or "ica" or None
+  EOG_METHOD: "ica"  # "self" or "first" or "ica" or None
+
+downsample:
+  DOWN_FS: 50
