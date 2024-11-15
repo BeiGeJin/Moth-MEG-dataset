@@ -9,7 +9,7 @@ with open("preproc/config.yaml", "r") as f:
     config = yaml.safe_load(f)
 SUBJECT = config["SUBJECT"]
 SESSIONS = config["SESSIONS"]
-BADS_MANUAL = config["sss"]["BADS_MANUAL"]
+# BADS_MANUAL = config["sss"]["BADS_MANUAL"]
 
 # calibration and crosstalk files for maxfilter
 calibration_file = "support_data/sss_cal.dat"
@@ -21,7 +21,7 @@ for SESSION in SESSIONS:
     print(f"Processing {SESSION}...")
     
     # Define paths
-    LOC_RAW = f"/project_data/volume0/newmeg/{SESSION}/data/raw/{SUBJECT}/"
+    LOC_RAW = f"/project_data/volume0/jerryjin/moth_meg/{SESSION}/raw/{SUBJECT}/"
     LOC_SAVE = f"/project_data/volume0/jerryjin/moth_meg/{SESSION}/sss/{SUBJECT}/"
     
     # make save directory if it doesn't exist
@@ -43,7 +43,7 @@ for SESSION in SESSIONS:
         raw = mne.io.read_raw_fif(raw_f, preload=True)
 
         # add bad channels and delete existing proj
-        raw.info["bads"] += BADS_MANUAL
+        # raw.info["bads"] += BADS_MANUAL
         raw.del_proj()
 
         # spatial-temporal SSS

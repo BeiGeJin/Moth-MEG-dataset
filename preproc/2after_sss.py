@@ -18,8 +18,8 @@ ER_NMAG = config["after_sss"]["ER_NMAG"]
 FILT_LFREQ = config["after_sss"]["FILT_LFREQ"] if config["after_sss"]["FILT_LFREQ"] != "None" else None
 FILT_HFREQ = config["after_sss"]["FILT_HFREQ"] if config["after_sss"]["FILT_HFREQ"] != "None" else None
 NOTCH_FREQS = config["after_sss"]["NOTCH_FREQS"]
-ECG_METHOD = config["after_sss"]["ECG_METHOD"]
-EOG_METHOD = config["after_sss"]["EOG_METHOD"]
+ECG_METHOD = config["after_sss"]["ECG_METHOD"] if config["after_sss"]["ECG_METHOD"] != "None" else None
+EOG_METHOD = config["after_sss"]["EOG_METHOD"] if config["after_sss"]["EOG_METHOD"] != "None" else None
 
 # file slug
 slug = ""
@@ -72,8 +72,8 @@ with open(f"/project_data/volume0/jerryjin/moth_meg/logs/{SUBJECT}{slug}.txt", "
         print(f"Processing {SESSION}...")
         
         # Define paths
-        LOC_RAW = f"/project_data/volume0/newmeg/{SESSION}/data/raw/{SUBJECT}/"
         LOC_ROOT = f"/project_data/volume0/jerryjin/moth_meg/{SESSION}/"
+        LOC_RAW = LOC_ROOT + f"raw/{SUBJECT}/"
         LOC_SSS = LOC_ROOT + f"sss/{SUBJECT}/"
         LOC_SAVE = LOC_ROOT + f"{dir_name}/{SUBJECT}/"
         
@@ -218,9 +218,7 @@ with open(f"/project_data/volume0/jerryjin/moth_meg/logs/{SUBJECT}{slug}.txt", "
                     ica_eog = mne.preprocessing.ICA(n_components=30, random_state=42)
                     ica_eog.fit(raw_sss_ica)
                     # find eog components
-                    ref_channel = "EOG002" if "EOG002" in raw_sss_ica.ch_names else "MEG1213"
-                    if SUBJECT == "C" and SESSION == "Moth2":  # special case where EOG signal is flat
-                        ref_channel = "MEG1213"
+                    ref_channel = "EOG002" if ("EOG002" in raw_sss_ica.ch_names) and ("EOG002" not in raw_sss_ica.info["bads"]) else "MEG1213"
                     eog_indices, eog_scores = ica_eog.find_bads_eog(raw_sss_ica, ch_name=ref_channel)
                     ica_eog.exclude = eog_indices
                     print(f"Detect {len(eog_indices)} EOG components.")
