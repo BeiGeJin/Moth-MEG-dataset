@@ -1,5 +1,5 @@
-SUBJECT: "C"
-SESSIONS: ["Moth1", "Moth2", "Moth3", "Moth4", "Moth5"]
+SUBJECT: "A"
+SESSIONS: ["Moth3"]
 Moth1:
   BLOCKS: ["01", "02", "03", "04", "05", "06", "07", "08"]
 Moth2:
@@ -11,11 +11,8 @@ Moth4:
 Moth5:
   BLOCKS: ["01", "02", "03", "04", "05", "06", "07"]
 
-# sss:
-#   BADS_MANUAL: ["MEG1212"]  # for subject A and C
-
 after_sss:
-  ER_NWINS: 4
+  ER_NWINS: 0  # 0 means don't do ER
   ER_WINLEN: 10
   ER_NGRAD: 2
   ER_NMAG: 2

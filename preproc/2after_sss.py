@@ -23,7 +23,8 @@ EOG_METHOD = config["after_sss"]["EOG_METHOD"] if config["after_sss"]["EOG_METHO
 
 # file slug
 slug = ""
-slug += f"_er-{ER_NWINS}-{ER_WINLEN}-{ER_NGRAD}-{ER_NMAG}"
+if ER_NWINS > 0:
+    slug += f"_er-{ER_NWINS}-{ER_WINLEN}-{ER_NGRAD}-{ER_NMAG}"
 if FILT_LFREQ is not None and FILT_HFREQ is not None:
     slug += f"_band-{FILT_LFREQ}-{FILT_HFREQ}"
 elif FILT_LFREQ is not None:
@@ -81,30 +82,31 @@ with open(f"/project_data/volume0/jerryjin/moth_meg/logs/{SUBJECT}{slug}.txt", "
         if not os.path.exists(LOC_SAVE):
             os.makedirs(LOC_SAVE)
         
-        # load empty room
-        print(">>Now calculating empty room projection...")
-        er_f = glob.glob(LOC_SSS + f"*{SUBJECT}_{SESSION}_EmptyRoom*raw.fif")[0]
-        er_sss = mne.io.read_raw_fif(er_f, preload=True)
-        # determine intervals
-        n_windows = ER_NWINS
-        window_len = ER_WINLEN
-        er_len = er_sss[0][0].shape[1]
-        center_dist = np.floor(er_len / (1.0 + n_windows))
-        curr_center = center_dist
-        starts = []
-        stops = []
-        for i in range(n_windows):
-            half_win_len = np.floor(er_sss.info["sfreq"] * window_len * 0.5)
-            (win_start, win_stop) = (curr_center - half_win_len, curr_center + half_win_len)
-            win_start = er_sss.times[int(win_start)]
-            win_stop = er_sss.times[int(win_stop)]
-            curr_center += center_dist
-            starts.append(win_start)
-            stops.append(win_stop)
-        # calculate emptyroom projs
-        er_projs = []
-        for start, stop in zip(starts, stops):
-            er_projs.extend(mne.compute_proj_raw(er_sss, start=start, stop=stop, n_grad=ER_NGRAD, n_mag=ER_NMAG, verbose=True))
+        if ER_NWINS > 0:
+            # load empty room
+            print(">>Now calculating empty room projection...")
+            er_f = glob.glob(LOC_SSS + f"*{SUBJECT}_{SESSION}_EmptyRoom*raw.fif")[0]
+            er_sss = mne.io.read_raw_fif(er_f, preload=True)
+            # determine intervals
+            n_windows = ER_NWINS
+            window_len = ER_WINLEN
+            er_len = er_sss[0][0].shape[1]
+            center_dist = np.floor(er_len / (1.0 + n_windows))
+            curr_center = center_dist
+            starts = []
+            stops = []
+            for i in range(n_windows):
+                half_win_len = np.floor(er_sss.info["sfreq"] * window_len * 0.5)
+                (win_start, win_stop) = (curr_center - half_win_len, curr_center + half_win_len)
+                win_start = er_sss.times[int(win_start)]
+                win_stop = er_sss.times[int(win_stop)]
+                curr_center += center_dist
+                starts.append(win_start)
+                stops.append(win_stop)
+            # calculate emptyroom projs
+            er_projs = []
+            for start, stop in zip(starts, stops):
+                er_projs.extend(mne.compute_proj_raw(er_sss, start=start, stop=stop, n_grad=ER_NGRAD, n_mag=ER_NMAG, verbose=True))
         
         # load first recording
         if ECG_METHOD == "first" or EOG_METHOD == "first":
@@ -121,9 +123,10 @@ with open(f"/project_data/volume0/jerryjin/moth_meg/logs/{SUBJECT}{slug}.txt", "
             raw_sss = mne.io.read_raw_fif(sss_f, preload=True)
 
             # empty room correction
-            print(">>Now applying empty room correction...")
-            raw_sss.add_proj(er_projs)
-            raw_sss.apply_proj()
+            if ER_NWINS > 0:
+                print(">>Now applying empty room correction...")
+                raw_sss.add_proj(er_projs)
+                raw_sss.apply_proj()
 
             # bandpass filtering
             print(">>Now applying bandpass filtering...")
@@ -218,7 +221,9 @@ with open(f"/project_data/volume0/jerryjin/moth_meg/logs/{SUBJECT}{slug}.txt", "
                     ica_eog = mne.preprocessing.ICA(n_components=30, random_state=42)
                     ica_eog.fit(raw_sss_ica)
                     # find eog components
-                    ref_channel = "EOG002" if ("EOG002" in raw_sss_ica.ch_names) and ("EOG002" not in raw_sss_ica.info["bads"]) else "MEG1213"
+                    # ref_channel = "EOG002" if ("EOG002" in raw_sss_ica.ch_names) and ("EOG002" not in raw_sss_ica.info["bads"]) else "MEG1213"
+                    good_eog_chs = [ch for ch in raw_sss_ica.info["ch_names"] if "EOG" in ch and ch not in raw_sss_ica.info["bads"]]
+                    ref_channel = good_eog_chs[0] if len(good_eog_chs) > 0 else "MEG1213"
                     eog_indices, eog_scores = ica_eog.find_bads_eog(raw_sss_ica, ch_name=ref_channel)
                     ica_eog.exclude = eog_indices
                     print(f"Detect {len(eog_indices)} EOG components.")
